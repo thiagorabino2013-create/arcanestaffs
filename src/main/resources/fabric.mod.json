@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "arcanestaffs",
+  "version": "1.0.0",
+  "name": "Arcane Staffs",
+  "description": "Elemental magic staffs: fire, ice, lightning, earth and wind.",
+  "authors": ["Maioral"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.maioral.arcanestaffs.ArcaneStaffs"]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
