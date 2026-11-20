@@ -12,6 +12,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -107,8 +108,7 @@ public final class Spells {
 
 		for (LivingEntity e : cone(world, caster, 8, 0.7)) {
 			e.damage(world, world.getDamageSources().indirectMagic(caster, caster), 6.0F);
-			e.addVelocity(0, 0.9, 0);
-			e.velocityModified = true;
+			launch(e, 0, 0.9, 0);
 			e.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 60, 1));
 		}
 	}
@@ -117,11 +117,10 @@ public final class Spells {
 	/** Blast that shoves enemies away. Sneak + cast to dash through the air instead. */
 	public static void wind(ServerWorld world, PlayerEntity caster) {
 		Vec3d look = caster.getRotationVec(1.0F);
-		sound(world, caster.getEyePos(), SoundEvents.ENTITY_BREEZE_WIND_BURST, 1.0F);
+		sound(world, caster.getEyePos(), SoundEvents.ENTITY_BREEZE_WIND_BURST.value(), 1.0F);
 
 		if (caster.isSneaking()) {
-			caster.addVelocity(look.x * 1.8, look.y * 1.2 + 0.3, look.z * 1.8);
-			caster.velocityModified = true;
+			launch(caster, look.x * 1.8, look.y * 1.2 + 0.3, look.z * 1.8);
 			caster.fallDistance = 0;
 			world.spawnParticles(ParticleTypes.CLOUD, caster.getX(), caster.getY() + 0.2, caster.getZ(),
 					25, 0.4, 0.2, 0.4, 0.05);
@@ -136,8 +135,7 @@ public final class Spells {
 		}
 		for (LivingEntity e : cone(world, caster, 9, 0.5)) {
 			Vec3d away = e.getBoundingBox().getCenter().subtract(eye).normalize();
-			e.addVelocity(away.x * 2.0, 0.5, away.z * 2.0);
-			e.velocityModified = true;
+			launch(e, away.x * 2.0, 0.5, away.z * 2.0);
 			e.damage(world, world.getDamageSources().indirectMagic(caster, caster), 2.0F);
 		}
 	}
@@ -209,6 +207,14 @@ public final class Spells {
 		for (int i = 2; i < count; i++) {
 			Vec3d pos = from.add(step.multiply(i));
 			world.spawnParticles(particle, pos.x, pos.y, pos.z, 1, 0.02, 0.02, 0.02, 0.0);
+		}
+	}
+
+	/** Adds velocity to an entity and makes sure players get the update too. */
+	private static void launch(LivingEntity entity, double x, double y, double z) {
+		entity.addVelocity(x, y, z);
+		if (entity instanceof ServerPlayerEntity player) {
+			player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
 		}
 	}
 

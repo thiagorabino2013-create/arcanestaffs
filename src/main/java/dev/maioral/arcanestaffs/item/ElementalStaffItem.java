@@ -1,6 +1,6 @@
 package dev.maioral.arcanestaffs.item;
 
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -33,7 +33,7 @@ public class ElementalStaffItem extends Item {
 		if (world instanceof ServerWorld serverWorld) {
 			spell.cast(serverWorld, user);
 			user.getItemCooldownManager().set(stack, cooldownTicks);
-			stack.damage(1, user, LivingEntity.getSlotForHand(hand));
+			stack.damage(1, user, hand == Hand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
 		}
 		return ActionResult.SUCCESS;
 	}
